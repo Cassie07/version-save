@@ -40,7 +40,7 @@ id_mentions=read_folder(path)
 products=[i for i in id_mentions.keys()]
 neg_id_mention={}
 pos_id_mention={}
-id_mention={}
+id_mention={} # a dictionary contain all id:mention
 for i in products:
     label=[j for j in id_mentions[i].keys()]  # ['neg.json','pos.json']
     # neg
@@ -95,9 +95,12 @@ for i in neg_id:
     p1=int(pos[0])
     p2=int(pos[1])
     if p1>p2:   # (14,3)
+        # define relation
         relation='-(e2, e1)'
+        # add position info to target word
         men_nopunc[p2]='<e1>'+men_nopunc[p2]+'</e1>'
         men_nopunc[p1]='<e2>'+men_nopunc[p1]+'</e2>'
+        # combine all words in the list
         seperator = ' '
         sentence=seperator.join(men_nopunc)
     elif int(p1)==int(p1):   # (14,14)
@@ -123,18 +126,18 @@ for i in pos_id:
     #print(p1)
     #print(p2)
     if p1>p2:   # (14,3)
-        relation='-(e2, e1)'
+        relation='+(e2, e1)'
         men_nopunc[p2]='<e1>'+men_nopunc[p2]+'</e1>'
         men_nopunc[p1]='<e2>'+men_nopunc[p1]+'</e2>'
         seperator = ' '
         sentence=seperator.join(men_nopunc)
     elif p1==p2:   # (14,14)
-        relation='-(e2, e1)'
+        relation='+(e2, e1)'
         men_nopunc[p2]='<e2><e1>'+men_nopunc[p2]+'</e1></e2>'
         seperator = ' '
         sentence=seperator.join(men_nopunc)
     else:
-        relation='-(e1, e2)'  # (3,14)
+        relation='+(e1, e2)'  # (3,14)
         men_nopunc[p1]='<e1>'+men_nopunc[p1]+'</e1>'
         men_nopunc[p2]='<e2>'+men_nopunc[p2]+'</e2>'
         seperator = ' '
