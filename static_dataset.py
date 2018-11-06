@@ -47,3 +47,4 @@ def load_pair_name(dir):
     return train_dataset_pair,test_dataset_pair
 
 a=load_pair_name(FLAGS.dir)
+# further work
