@@ -12,6 +12,26 @@ import tensorflow as tf
 #print("")
 
 # read all file names in a folder
+def clean_str(string):
+	"""
+	Tokenization/string cleaning for all datasets except for SST.
+	Original taken from https://github.com/yoonkim/CNN_sentence/blob/master/process_data.py
+	"""
+	string = re.sub(r"[^A-Za-z0-9()<>/,!?\'\`]", " ", string)
+	string = re.sub(r"\'s", " \'s", string)
+	string = re.sub(r"\'ve", " \'ve", string)
+	string = re.sub(r"n\'t", " n\'t", string)
+	string = re.sub(r"\'re", " \'re", string)
+	string = re.sub(r"\'d", " \'d", string)
+	string = re.sub(r"\'ll", " \'ll", string)
+	string = re.sub(r",", " , ", string)
+	string = re.sub(r"!", " ! ", string)
+	string = re.sub(r"\(", " \( ", string)
+	string = re.sub(r"\)", " \) ", string)
+	string = re.sub(r"\?", " \? ", string)
+	string = re.sub(r"\s{2,}", " ", string)
+	return string.strip().lower()
+
 def read_file(path):
     file_name=[]
     dirs=os.listdir(path)
@@ -115,8 +135,11 @@ def generate_dataset(id_mention_dir,pair_mid_dir):
             men_nopunc[p2]='<e2>'+men_nopunc[p2]+'</e2>'
             seperator = ' '
             sentence=seperator.join(men_nopunc)
-            data=[i,sentence,relation]
-            dataset.append(data)
+        sentence = sentence.replace("<e1>", "<e1> ").replace("</e1>", " </e11>") # replace the front by the back
+        sentence = sentence.replace("<e2>", "<e2> ").replace("</e2>", " </e22>")
+        sentence = clean_str(sentence) # delete
+        data=[i,sentence,relation]
+        dataset.append(data)
     # pos
     for i in pos_id:
         pos=re.findall(r'[(](.*?)[)]', i) # position of two words
@@ -143,7 +166,10 @@ def generate_dataset(id_mention_dir,pair_mid_dir):
             seperator = ' '
             sentence=seperator.join(men_nopunc)
         #print(sentence)
-            data=[i,sentence,relation]
-            dataset.append(data)
+        sentence = sentence.replace("<e1>", "<e1> ").replace("</e1>", " </e11>") # replace the front by the back
+        sentence = sentence.replace("<e2>", "<e2> ").replace("</e2>", " </e22>")
+        sentence = clean_str(sentence) # delete
+        data=[i,sentence,relation]
+        dataset.append(data)
     return dataset
 #print(generate_dataset(FLAGS.id_mention_dir,FLAGS.pair_mid_dir))
