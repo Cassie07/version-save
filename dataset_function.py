@@ -146,4 +146,4 @@ def generate_dataset(id_mention_dir,pair_mid_dir):
             data=[i,sentence,relation]
             dataset.append(data)
     return dataset
-print(generate_dataset(FLAGS.id_mention_dir,FLAGS.pair_mid_dir))
+#print(generate_dataset(FLAGS.id_mention_dir,FLAGS.pair_mid_dir))
