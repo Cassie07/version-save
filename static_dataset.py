@@ -1,3 +1,5 @@
+# Load pairs in training and testing dataset
+# [pair1,pair2,...]
 import dataset_function
 import json
 import os, sys
