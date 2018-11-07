@@ -21,13 +21,14 @@ print("")
 
 
 # pair_mid
-pair_mid=dataset_function.read_folder(FLAGS.pair_id_dir)
+#pair_mid=dataset_function.read_folder(FLAGS.pair_id_dir)
 #print(pair_mid)
 #a=pair_mid['Apex AD2600 Progressive-scan DVD player']
 #b=a['positive.json']
 #print(b['good_dd5.1'])
 
-def load_pair_name(dir):
+def load_pair_name(dir,pair_id_dir):
+    pair_mid=dataset_function.read_folder(pair_id_dir)
     list=dataset_function.read_file(dir) #['test','train]
     train_dataset=[]
     test_dataset=[]
@@ -50,7 +51,7 @@ def load_pair_name(dir):
                         dic_label=dic_product[j+'.json'] # key= label
                         for n in dic_label[m]:
                             train_dataset.append(n) # list of mention ids
-            print(len(train_dataset))
+            #print(len(train_dataset))
         else:
             path=dir+'/'+i
             label=dataset_function.read_file(path) #['neg','pos',...]
@@ -71,7 +72,7 @@ def load_pair_name(dir):
                         dic_label=dic_product[j+'.json'] # key= label
                         for n in dic_label[m]:
                             test_dataset.append(n)
-            print(len(test_dataset))
+            #print(len(test_dataset))
             #print(len(test_dataset_pair))
     return train_dataset,test_dataset
 
@@ -103,31 +104,55 @@ def generate_dataset(train_dataset,test_dataset, id_mention_dir):
         pos=pos[0].split(',')
         try:
             mention=neg_id_mention[i]
+            sign=0
         except:
             mention=pos_id_mention[i]
+            sign=1
         men_nopunc=re.findall(r'\w+\-?\w+\-?\w+|\'?\w+',mention) # a list contain all words in mentions(omit punctuations)
         p1=int(pos[0])
         p2=int(pos[1])
-        if p1>p2:   # (14,3)
-            # define relation
-            relation='-(e2, e1)'
-            # add position info to target word
-            men_nopunc[p2]='<e1>'+men_nopunc[p2]+'</e1>'
-            men_nopunc[p1]='<e2>'+men_nopunc[p1]+'</e2>'
-            # combine all words in the list
-            seperator = ' '
-            sentence=seperator.join(men_nopunc)
-        elif int(p1)==int(p1):   # (14,14)
-            relation='-(e2, e1)'
-            men_nopunc[p2]='<e2><e1>'+men_nopunc[p2]+'</e1></e2>'
-            seperator = ' '
-            sentence=seperator.join(men_nopunc)
+        if sign==0:
+            if p1>p2:   # (14,3) 
+                # define relation
+                relation='-(e2, e1)'
+                # add position info to target word
+                men_nopunc[p2]='<e1>'+men_nopunc[p2]+'</e1>'
+                men_nopunc[p1]='<e2>'+men_nopunc[p1]+'</e2>'
+                # combine all words in the list
+                seperator = ' '
+                sentence=seperator.join(men_nopunc)
+            elif int(p1)==int(p2):   # (14,14)
+                relation='-(e2, e1)'
+                men_nopunc[p2]='<e2><e1>'+men_nopunc[p2]+'</e1></e2>'
+                seperator = ' '
+                sentence=seperator.join(men_nopunc)
+            else:
+                relation='-(e1, e2)'  # (3,14)
+                men_nopunc[p1]='<e1>'+men_nopunc[p1]+'</e1>'
+                men_nopunc[p2]='<e2>'+men_nopunc[p2]+'</e2>'
+                seperator = ' '
+                sentence=seperator.join(men_nopunc)
         else:
-            relation='-(e1, e2)'  # (3,14)
-            men_nopunc[p1]='<e1>'+men_nopunc[p1]+'</e1>'
-            men_nopunc[p2]='<e2>'+men_nopunc[p2]+'</e2>'
-            seperator = ' '
-            sentence=seperator.join(men_nopunc)
+            if p1>p2:   # (14,3) 
+                # define relation
+                relation='+(e2, e1)'
+                # add position info to target word
+                men_nopunc[p2]='<e1>'+men_nopunc[p2]+'</e1>'
+                men_nopunc[p1]='<e2>'+men_nopunc[p1]+'</e2>'
+                # combine all words in the list
+                seperator = ' '
+                sentence=seperator.join(men_nopunc)
+            elif int(p1)==int(p2):   # (14,14)
+                relation='+(e2, e1)'
+                men_nopunc[p2]='<e2><e1>'+men_nopunc[p2]+'</e1></e2>'
+                seperator = ' '
+                sentence=seperator.join(men_nopunc)
+            else:
+                relation='+(e1, e2)'  # (3,14)
+                men_nopunc[p1]='<e1>'+men_nopunc[p1]+'</e1>'
+                men_nopunc[p2]='<e2>'+men_nopunc[p2]+'</e2>'
+                seperator = ' '
+                sentence=seperator.join(men_nopunc)
         sentence = sentence.replace("<e1>", "<e1> ").replace("</e1>", " </e11>") # replace the front by the back
         sentence = sentence.replace("<e2>", "<e2> ").replace("</e2>", " </e22>")
         sentence = dataset_function.clean_str(sentence) # delete
@@ -139,29 +164,55 @@ def generate_dataset(train_dataset,test_dataset, id_mention_dir):
         pos=pos[0].split(',')
         try:
             mention=neg_id_mention[i]
+            sign=0
         except:
             mention=pos_id_mention[i]
+            sign=1
         men_nopunc=re.findall(r'\w+\-?\w+\-?\w+|\'?\w+',mention) # a list contain all words in mentions(omit punctuations)
         p1=int(pos[0])
         p2=int(pos[1])
-        if p1>p2:   # (14,3)
-            relation='+(e2, e1)'
-            men_nopunc[p2]='<e1>'+men_nopunc[p2]+'</e1>'
-            men_nopunc[p1]='<e2>'+men_nopunc[p1]+'</e2>'
-            seperator = ' '
-            sentence=seperator.join(men_nopunc)
-        elif p1==p2:   # (14,14)
-            relation='+(e2, e1)'
-            men_nopunc[p2]='<e2><e1>'+men_nopunc[p2]+'</e1></e2>'
-            seperator = ' '
-            sentence=seperator.join(men_nopunc)
+        if sign==0:
+            if p1>p2:   # (14,3) 
+                # define relation
+                relation='-(e2, e1)'
+                # add position info to target word
+                men_nopunc[p2]='<e1>'+men_nopunc[p2]+'</e1>'
+                men_nopunc[p1]='<e2>'+men_nopunc[p1]+'</e2>'
+                # combine all words in the list
+                seperator = ' '
+                sentence=seperator.join(men_nopunc)
+            elif int(p1)==int(p2):   # (14,14)
+                relation='-(e2, e1)'
+                men_nopunc[p2]='<e2><e1>'+men_nopunc[p2]+'</e1></e2>'
+                seperator = ' '
+                sentence=seperator.join(men_nopunc)
+            else:
+                relation='-(e1, e2)'  # (3,14)
+                men_nopunc[p1]='<e1>'+men_nopunc[p1]+'</e1>'
+                men_nopunc[p2]='<e2>'+men_nopunc[p2]+'</e2>'
+                seperator = ' '
+                sentence=seperator.join(men_nopunc)
         else:
-            relation='+(e1, e2)'  # (3,14)
-            men_nopunc[p1]='<e1>'+men_nopunc[p1]+'</e1>'
-            men_nopunc[p2]='<e2>'+men_nopunc[p2]+'</e2>'
-            seperator = ' '
-            sentence=seperator.join(men_nopunc)
-        #print(sentence)
+            if p1>p2:   # (14,3) 
+                # define relation
+                relation='+(e2, e1)'
+                # add position info to target word
+                men_nopunc[p2]='<e1>'+men_nopunc[p2]+'</e1>'
+                men_nopunc[p1]='<e2>'+men_nopunc[p1]+'</e2>'
+                # combine all words in the list
+                seperator = ' '
+                sentence=seperator.join(men_nopunc)
+            elif int(p1)==int(p2):   # (14,14)
+                relation='+(e2, e1)'
+                men_nopunc[p2]='<e2><e1>'+men_nopunc[p2]+'</e1></e2>'
+                seperator = ' '
+                sentence=seperator.join(men_nopunc)
+            else:
+                relation='+(e1, e2)'  # (3,14)
+                men_nopunc[p1]='<e1>'+men_nopunc[p1]+'</e1>'
+                men_nopunc[p2]='<e2>'+men_nopunc[p2]+'</e2>'
+                seperator = ' '
+                sentence=seperator.join(men_nopunc)
         sentence = sentence.replace("<e1>", "<e1> ").replace("</e1>", " </e11>") # replace the front by the back
         sentence = sentence.replace("<e2>", "<e2> ").replace("</e2>", " </e22>")
         sentence = dataset_function.clean_str(sentence) # delete
@@ -169,8 +220,8 @@ def generate_dataset(train_dataset,test_dataset, id_mention_dir):
         test.append(data)
     return train,test
 
-train_d,test_d=load_pair_name(FLAGS.dir)
+train_d,test_d=load_pair_name(FLAGS.dir,FLAGS.pair_id_dir)
 id_mention_dir=FLAGS.id_mention_dir
 train,test=generate_dataset(train_d,test_d,id_mention_dir)
-#print(len(train))
-#print(test)
+print(len(train))
+print(test)
