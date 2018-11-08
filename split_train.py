@@ -1,3 +1,6 @@
+# Use dataset generate by Jiaxin
+# load training and testing data
+# modify code in load data part
 import pandas as pd
 import nltk
 import re
