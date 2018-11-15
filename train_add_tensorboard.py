@@ -195,8 +195,9 @@ def train():
 		# batches = data_helpers.batch_iter(list(zip(x_shuffled, y_shuffled)), FLAGS.batch_size, FLAGS.num_epochs)
 
 		max_f1 = -1
+        
 		for step, batch in enumerate(batches):
-			counter+=1
+#			counter+=1
 			x_batch, y_batch = zip(*batch)
 
 			feed_dict = {model.input_text: x_batch, model.dropout_keep_prob1: FLAGS.dropout_keep_prob1, model.dropout_keep_prob2: FLAGS.dropout_keep_prob2, model.labels: y_batch}
@@ -205,7 +206,7 @@ def train():
             # sess.run(y,feed_dict): feed data in feed_dict into y
 			summary, _, loss, accuracy = sess.run([merged, model.train, model.cost, model.accuracy], feed_dict=feed_dict)
 			# writer.add_summary(sum, global_step=step)
-			train_writer.add_summary(summary, counter)
+			train_writer.add_summary(summary, step)
 			# Training log display
 			if step % FLAGS.display_every == 0:
 #				saver.save(sess, "checkpoints/i{}_l{}.ckpt".format(counter, layers))
@@ -221,8 +222,8 @@ def train():
 					model.dropout_keep_prob2: 1.0
 				}
 				summary,loss, accuracy, predictions = sess.run(
-					[summary,model.cost, model.accuracy, model.predictions], feed_dict)
-				test_writer.add_summary(summary, counter)                               
+					[merged,model.cost, model.accuracy, model.predictions], feed_dict)
+				test_writer.add_summary(summary, step)                               
                 # calculate F1 score
 				f1 = f1_score(np.argmax(y_test, axis=1), predictions, average="macro")
 				print("step {}:, loss {}, acc {}, f1 {}\n".format(step, loss, accuracy, f1))
@@ -250,7 +251,3 @@ def train():
         #tf.metrics.auc(model.labels,model.predictions,weights=None,num_thresholds=200,metrics_collections=None,updates_collections=None,curve='ROC',name=None,summation_method='trapezoidal')
 def main(_):
 	train()
-
-
-if __name__ == "__main__":
-	tf.app.run()
